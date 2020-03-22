@@ -22,8 +22,9 @@ luv u.
 
     -----
 
-    Example to set password: password -s nathnaeltg instagram p455w0rd
+    
     Example to get password: password -g nathnaeltg instagram
+    Example to set password: password -s narasaka github p455w0rd
     Example to get list of usernames: password -l
 
     -----
@@ -31,9 +32,9 @@ luv u.
     Options list:
 
     -h or --help: displays guide
-    -s or --set: change mode to "set"
-    -f or --fetch: change mode to "fetch". Copies password to clipboard.
-    -g or --generate change mode to "generate"
+    -s or --set: change mode to "set".
+    -f or --fetch: change mode to "fetch". Copies previously generated/set password to clipboard.
+    -g or --generate change mode to "generate". Generates password, then copies to clipboard.
     -l or --list: displays a list of platforms/usernames
     -v or --version: this one is pretty straightforward...
 
