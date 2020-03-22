@@ -1,0 +1,316 @@
+#!/usr/bin/python3
+
+import os
+import sys
+import secrets
+import pyperclip
+import keyring
+import json
+import string
+
+class Generator:
+    def __init__(self, key):
+        self.key = int(key)
+        self.complete = string.ascii_letters + string.punctuation + string.digits
+        self.alphanumeric = string.ascii_letters + string.digits
+
+    def random(self):
+        while True:
+            password = ''.join(secrets.choice(self.complete) for i in range(self.key))
+
+            if (
+            any(i.islower() for i in password)
+            and any(i.isupper() for i in password)
+            and any(i in string.punctuation for i in password)
+            and any(i in string.digits for i in password)
+            ):
+                break
+
+        return password
+
+    def alnum(self):
+        while True:
+            password = ''.join(secrets.choice(self.alphanumeric) for i in range(self.key))
+
+            if (
+            any(i.islower() for i in password)
+            and any(i.isupper() for i in password)
+            and any(i.isdigit() for i in password)
+            ):
+                break
+
+        return password
+
+    def diceware(self):
+        with open('/usr/share/dict/words') as f:
+            words = [i.strip() for i in f if len(i)>=5]
+            password = '-'.join(secrets.choice(words) for i in range(self.key))
+
+            return password
+
+
+def writeJson(username, platform):
+    os.chdir('/usr/share/pyssword-resources')
+    if os.path.exists('./passdb.json'):
+        try:
+            with open('passdb.json', 'r') as f:
+                json_data = json.load(f)
+                data = json_data[username]
+                data.append(platform)
+
+            with open('passdb.json', 'w') as f:
+                json.dump(json_data, f, indent=4)
+
+        except KeyError:
+            with open('passdb.json', 'r') as f:
+                data = json.load(f)
+                data[username] = []
+                data[username].append(platform)
+
+            with open('passdb.json', 'w') as f:
+                json.dump(data, f, indent=4)
+
+    else:
+        data = {}
+        data[username] = []
+        data[username].append(platform)
+        with open('passdb.json', 'w') as f:
+            json.dump(data, f, indent=4)
+
+def main():
+    print('Type "r" for a strong random password')
+    print('Type "d" for a diceware type password')
+    print('Type "an" for an alphanumeric password')
+    while True:
+        passType = input('Input: ')
+        if passType.lower() in ['r', 'd', 'an']:
+            if passType.lower() == 'r':
+                while True:
+                    length = input('Length of password(make it long!)[int]: ')
+                    if length.isdigit():
+                        print('Your password will be ' + str(length) + ' characters long.')
+                        while True:
+                            userInput = input('[Y] to proceed, [n] to cancel: ')
+                            if userInput in ['y', 'n']:
+                                if userInput.lower() == 'y':
+                                    g = Generator(length)
+                                    password = g.random()
+                                    print('Generating...\n')
+                                    return password
+                                    break
+                                else:
+                                    print('Ok bye...')
+                                    break
+                        break
+                break
+
+            elif passType.lower() == 'an':
+                while True:
+                    length = input('Length of password[int]: ')
+                    if length.isdigit():
+                        print('Your password will be ' + str(length) + ' characters long.')
+                        while True:
+                            userInput = input('[Y] to proceed, [n] to cancel: ')
+                            if userInput in ['y', 'n']:
+                                if userInput.lower() == 'y':
+                                    g = Generator(length)
+                                    password = g.alnum()
+                                    print('Generating...\n')
+                                    return password
+                                    break
+                                else:
+                                    print('Ok bye...')
+                                    break
+                        break
+                break
+
+            elif passType.lower() == 'd':
+                while True:
+                    length = input('Amount of words in your password[int]: ')
+                    if length.isdigit():
+                        print('Your password will be ' + str(length) + ' words long.')
+                        while True:
+                            userInput = input('[Y] to proceed, [n] to cancel: ')
+                            if userInput in ['y', 'n']:
+                                if userInput.lower() == 'y':
+                                    g = Generator(length)
+                                    password = g.diceware()
+                                    print('Generating...\n')
+                                    return password
+                                    break
+                                else:
+                                    print('Ok bye...')
+                                    break
+                        break
+                break
+
+try:
+    arg = sys.argv[1]
+
+except IndexError:
+    print('\nUsage: password [options] [username] [platform] [password]\n')
+    print('-----\n')
+    print('Example to set password: password -s nathnaeltg instagram p455w0rd')
+    print('Example to get password: password -g nathnaeltg instagram')
+    print('Example to get list of usernames: password -l\n')
+    print('-----\n')
+    print('Options list:\n')
+    print('-h or --help: displays guide')
+    print('-s or --set: change mode to "set"')
+    print('-f or --fetch: change mode to "fetch". Copies password to clipboard.')
+    print('-g or --generate change mode to "generate"')
+    print('-l or --list: displays a list of platforms/usernames')
+    print('-v or --version: this one is pretty straightforward...')
+
+else:
+    if arg == '-h' or arg == '--help':
+        print('\nUsage: password [options] [username] [platform] [password]\n')
+        print('-----\n')
+        print('Example to set password: password -s nathnaeltg instagram p455w0rd')
+        print('Example to get password: password -g nathnaeltg instagram')
+        print('Example to get list of usernames: password -l\n')
+        print('-----\n')
+        print('Options list:\n')
+        print('-h or --help: displays guide')
+        print('-s or --set: change mode to "set"')
+        print('-f or --fetch: change mode to "fetch". Copies password to clipboard.')
+        print('-g or --generate change mode to "generate"')
+        print('-l or --list: displays a list of platforms/usernames')
+        print('-v or --version: this one is pretty straightforward...')
+
+    elif arg == '-g' or arg == '--generate':
+        try:
+            os.chdir('/usr/share/pyssword-resources')
+            username = sys.argv[2].lower()
+            platform = ' '.join(sys.argv[3:]).lower()
+            if len(username) == 0 or len(platform) == 0:
+                print('Usage: pyssword -g [username] [platform]')
+            else:
+                try:
+                    with open('passdb.json', 'r') as f:
+                        json_data = json.load(f)
+                        user_list = [i for i in json_data]
+                        try:
+                            p_list = [i for i in json_data[username]]
+
+                            if username in user_list and platform in p_list:
+                                print(username + ' on ' + platform + ' is already in the database.')
+                                while True:
+                                    userInput = input('Do you want to overwrite data?[Y/n]')
+                                    if userInput.lower() in ['y', 'n']:
+                                        if userInput.lower() == 'y':
+                                            try:
+                                                keyring.set_password(platform, username, main())
+                                                pyperclip.copy(keyring.get_password(platform, username))
+                                                print('\nYour new password is copied to clipboard. Go ahead and paste it.\n')
+                                                break
+                                            except TypeError:
+                                                print('')
+
+
+
+                                        else:
+                                            pyperclip.copy(keyring.get_password(platform, username))
+                                            print('\nYour old password is copied to clipboard. Go ahead and paste it.\n')
+                                            break
+                            else:
+                                try:
+                                    keyring.set_password(platform, username, main())
+                                    writeJson(username, platform)
+                                    pyperclip.copy(keyring.get_password(platform, username))
+                                    print('\nYour password is copied to clipboard. Go ahead and paste it.\n')
+                                except TypeError:
+                                    print('')
+
+
+
+                        except KeyError:
+                            try:
+                                keyring.set_password(platform, username, main())
+                                writeJson(username, platform)
+                                pyperclip.copy(keyring.get_password(platform, username))
+                                print('\nYour password is copied to clipboard. Go ahead and paste it.\n')
+                            except TypeError:
+                                print('')
+
+
+
+                except FileNotFoundError:
+                    try:
+                        keyring.set_password(platform, username, main())
+                        writeJson(username, platform)
+                        pyperclip.copy(keyring.get_password(platform, username))
+                        print('\nYour password is copied to clipboard. Go ahead and paste it.\n')
+                    except TypeError:
+                        print('')
+
+
+
+        except IndexError:
+            if bool(sys.argv[2:]) == True:
+                print('\nError.')
+                print('Usage: password -g [username] [platform]\n')
+            else:
+                print(main()+'\n')
+
+
+    elif arg == '-f' or arg == '--fetch':
+        try:
+            username = sys.argv[2].lower()
+            platform = sys.argv[3].lower()
+
+            try:
+                os.chdir('/usr/share/pyssword-resources')
+                with open('passdb.json', 'r') as f:
+                    json_data = json.load(f)
+                    user_list = [i for i in json_data]
+                    try:
+                        p_list = [i for i in json_data[username]]
+                        if platform in p_list:
+                            pyperclip.copy(keyring.get_password(platform, username))
+                            print('\nYour password is copied to clipboard. Go ahead and paste it.\n')
+
+                        else:
+                            print('\nThe username ['+ username +'] is not on the platform ['+platform+'] in the database.')
+                            print('However, it is on these platforms: ')
+                            print(p_list)
+                            print('\nTo generate password for ['+ username +'] on ['+platform+'] type:')
+                            print('password -g ' + username + ' ' + platform+'\n')
+
+                    except KeyError:
+                        print('\nThe username [' + username + '] is not in the database.')
+                        print('Nothing to fetch.')
+                        print('Goodbye...\n')
+
+            except FileNotFoundError:
+                print('\nNo databases yet.')
+                print('Generate passwords using: password -g [username] [platform]\n')
+
+        except IndexError:
+            print('\nError.')
+            print('Usage: password -g [username] [platform]\n')
+
+    elif arg == '-l' or arg == '--list':
+        try:
+            if bool(sys.argv[2:]) == True:
+                print('Usage: password -l')
+            else:
+                os.chdir('/usr/share/pyssword-resources')
+                with open('passdb.json', 'r') as f:
+                    json_data = json.load(f)
+                    user_list = [i for i in json_data]
+                    for username in json_data:
+                        print(username+': ')
+                        for i in json_data[username]:
+                            print('\t'+i)
+
+        except FileNotFoundError:
+            print('\nNo databases yet.')
+            print('Generate passwords using: password -g [username] [platform]\n')
+
+    elif arg == '-v' or arg =='--version':
+        print('\nv0.0.1(narasaka)\n')
+
+    else:
+        print('\nCommand not found.')
+        print('Usage: password [options] [username] [platform]\n')
