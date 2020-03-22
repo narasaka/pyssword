@@ -207,8 +207,6 @@ else:
                                             except TypeError:
                                                 print('')
 
-
-
                                         else:
                                             pyperclip.copy(keyring.get_password(platform, username))
                                             print('\nYour old password is copied to clipboard. Go ahead and paste it.\n')
@@ -222,8 +220,6 @@ else:
                                 except TypeError:
                                     print('')
 
-
-
                         except KeyError:
                             try:
                                 keyring.set_password(platform, username, main())
@@ -232,8 +228,6 @@ else:
                                 print('\nYour password is copied to clipboard. Go ahead and paste it.\n')
                             except TypeError:
                                 print('')
-
-
 
                 except FileNotFoundError:
                     try:
@@ -244,15 +238,12 @@ else:
                     except TypeError:
                         print('')
 
-
-
         except IndexError:
             if bool(sys.argv[2:]) == True:
                 print('\nError.')
                 print('Usage: password -g [username] [platform]\n')
             else:
                 print(main()+'\n')
-
 
     elif arg == '-f' or arg == '--fetch':
         try:
@@ -290,6 +281,71 @@ else:
             print('\nError.')
             print('Usage: password -g [username] [platform]\n')
 
+    elif arg == '-s' or arg == '--set':
+        try:
+            username = sys.argv[2].lower()
+            platform = sys.argv[3].lower()
+            password = sys.argv[4]
+
+            if len(username) == 0 or len(platform) == 0 or len(password) == 0:
+                print('Usage: pyssword -s [username] [platform] [password]')
+            else:
+                try:
+                    with open('passdb.json', 'r') as f:
+                        json_data = json.load(f)
+                        user_list = [i for i in json_data]
+                        try:
+                            p_list = [i for i in json_data[username]]
+
+                            if username in user_list and platform in p_list:
+                                print(username + ' on ' + platform + ' is already in the database.')
+                                while True:
+                                    userInput = input('Do you want to overwrite data?[Y/n]')
+                                    if userInput.lower() in ['y', 'n']:
+                                        if userInput.lower() == 'y':
+                                            try:
+                                                keyring.set_password(platform, username, password)
+                                                pyperclip.copy(keyring.get_password(platform, username))
+                                                print('\nYour new password is set and copied to clipboard. Go ahead and paste it.\n')
+                                                break
+                                            except TypeError:
+                                                print('')
+
+                                        else:
+                                            pyperclip.copy(keyring.get_password(platform, username))
+                                            print('\nYour old password is copied to clipboard. Go ahead and paste it.\n')
+                                            break
+                            else:
+                                try:
+                                    keyring.set_password(platform, username, password)
+                                    writeJson(username, platform)
+                                    pyperclip.copy(keyring.get_password(platform, username))
+                                    print('\nYour password is set and copied to clipboard. Go ahead and paste it.\n')
+                                except TypeError:
+                                    print('')
+
+                        except KeyError:
+                            try:
+                                keyring.set_password(platform, username, password)
+                                writeJson(username, platform)
+                                pyperclip.copy(keyring.get_password(platform, username))
+                                print('\nYour password is set and copied to clipboard. Go ahead and paste it.\n')
+                            except TypeError:
+                                print('')
+
+                except FileNotFoundError:
+                    try:
+                        keyring.set_password(platform, username, password)
+                        writeJson(username, platform)
+                        pyperclip.copy(keyring.get_password(platform, username))
+                        print('\nYour password is set and copied to clipboard. Go ahead and paste it.\n')
+                    except TypeError:
+                        print('')
+
+        except Exception:
+            print('\nError.')
+            print('Usage: pyssword -s [username] [platform] [password]\n')
+
     elif arg == '-l' or arg == '--list':
         try:
             if bool(sys.argv[2:]) == True:
@@ -306,7 +362,8 @@ else:
 
         except FileNotFoundError:
             print('\nNo databases yet.')
-            print('Generate passwords using: password -g [username] [platform]\n')
+            print('Generate passwords using: pyssword -s [username] [platform]')
+            print('Set passwords using: pyssword -g [username] [platform] [password]')
 
     elif arg == '-v' or arg =='--version':
         print('\nv0.0.1(narasaka)\n')
