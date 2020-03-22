@@ -10,6 +10,7 @@ luv u.
     
     git clone https://github.com/narasaka/pyssword.git
     cd pyssword
+    sudo apt-get install xclip
     sudo dpkg -i pyssword_v0.0.1.deb
     
     pyssword --version
