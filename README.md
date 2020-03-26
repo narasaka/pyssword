@@ -19,7 +19,7 @@ luv u.
     
     pyssword
     
-    Usage: password [options] [username] [platform] [password]
+    Usage: pyssword [options] [username] [platform] [password]
 
     -----
 
